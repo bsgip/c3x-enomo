@@ -16,14 +16,14 @@ if sys.version_info < (3,7):
     install_requires.append('dataclasses')
 
 setuptools.setup(
-    name="enomo",
+    name="c3x-enomo",
     version="0.0.1",
     author="BSGIP",
     description="For solving DER optimisation problems",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=None,
-    packages=setuptools.find_packages(),
+    packages=['c3x.enomo'],
     classifiers=[
     ],
     install_requires=install_requires,
