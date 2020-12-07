@@ -73,14 +73,14 @@ class EnergyStorage:
     Attributes:
         max_capacity: Maximum energy capacity of the system.
         depth_of_discharge_limit: Proportion of energy reserved as a lower bound on the 
-            state of charge of the system at any given time.
-        charging_power_limit: Maximum rate at which the system can be charged
-        discharging_power_limit: Maximum rate at which the system can be discharged
-        charging_efficiency: Energy efficiency of conversion to stored energy.
-        discharging_efficiency: Energy efficiency of conversion from stored energy.
+            state of charge of the system at any given time. Between 0 and 1.
+        charging_power_limit: Maximum rate at which the system can be charged.
+        discharging_power_limit: Maximum rate at which the system can be discharged.
+        charging_efficiency: Energy efficiency of conversion to stored energy. Between 0 and 1.
+        discharging_efficiency: Energy efficiency of conversion from stored energy. Between 0 and 1.
         throughput_cost: Cost to the system of the roundtrip conversion (both charging and
             discharging the system)
-        initial_state_of_charge: Initial State of Charge of the storage system.
+        initial_state_of_charge: Initial State of Charge of the storage system. Between 0.0 and max_capacity
 
     Raises:
         ValueError: On instantiation, a `ValueError` is raised when passed in attributes

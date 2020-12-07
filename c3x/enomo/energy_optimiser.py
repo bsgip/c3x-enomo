@@ -8,6 +8,7 @@ import numpy as np
 # Define some useful container objects to define the optimisation objectives
 
 class OptimiserObjective(object):
+    """ A set of objectives that can be used to build the optimiser function"""
     ConnectionPointCost = 1
     ConnectionPointEnergy = 2
     ThroughputCost = 3
@@ -24,6 +25,9 @@ class OptimiserObjective(object):
     LocalGridPeakPower = 14
     
 class OptimiserObjectiveSet(object):
+    """ An optimiser objective set is a set of optimisation rules that can be used to build the
+        optimisation function. These set have been create for common use.
+    """
     FinancialOptimisation = [OptimiserObjective.ConnectionPointCost,
                              #OptimiserObjective.GreedyGenerationCharging,
                              OptimiserObjective.ThroughputCost,
@@ -57,8 +61,21 @@ minutes_per_hour = 60.0
 ####################################################################
 
 class EnergyOptimiser(object):
+    """ The energy Optimiser builds an optimisation model.
+    """
     
     def __init__(self, interval_duration, number_of_intervals, energy_system, objective):
+        """
+        Sets up the energy optimiser using cplex. The configuration for the optimiser is done using appropriate
+        environmental variables (OPTIMISER_ENGINE and OPTIMISER_ENGINE_EXECUTABLE)
+
+        Args:
+            interval_duration(int): time step in between samples in minutes
+            number_of_intervals(int): number of samples
+            energy_system(EnergySystem): System for which to optimise
+            objective(list): List of Optimiser Objects
+
+        """
         self.interval_duration = interval_duration  # The duration (in minutes) of each of the intervals being optimised over
         self.number_of_intervals = number_of_intervals
         self.energy_system = energy_system
@@ -94,6 +111,7 @@ class EnergyOptimiser(object):
         # and convert the data into the right format for the optimiser objects
         self.system_demand_dct = dict(enumerate(system_demand))
         self.system_generation_dct = dict(enumerate(system_generation))
+
 
         #### Initialise the optimisation variables (all indexed by self.model.Time) ####
 
