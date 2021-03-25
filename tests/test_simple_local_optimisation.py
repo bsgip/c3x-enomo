@@ -59,7 +59,7 @@ def create_energy_system(
     energy_system.add_local_tariff(tariff)
     return energy_system
 
-
+@pytest.mark.solver('miqp')
 def test_no_action_for_equal_export_import_price():
     """Given a simple tariff structure where transport costs are zero, and import
     tariffs are twice export tariffs, with no distinction between local and remote tariffs,
@@ -86,7 +86,7 @@ def test_no_action_for_equal_export_import_price():
         optimiser.values("storage_state_of_charge"), np.zeros(N_INTERVALS)
     )
 
-
+@pytest.mark.solver('miqp')
 def test_simple_arbitrage_for_cheaper_local_energy():
     """When the local energy import tariff is cheaper than the remote energy import tariff,
     the battery should charge off excess local generation.
@@ -120,7 +120,7 @@ def test_simple_arbitrage_for_cheaper_local_energy():
         )
         assert storage_charge_total[i] == 0.0
 
-
+@pytest.mark.solver('miqp')
 def test_cannot_remote_export_before_satisfying_local_demand():
     """Test that we cannot create an electrically infeasible solution where the battery
     is discharging into the remote grid (e.g. to take advantage of a high remote export value)
@@ -202,7 +202,7 @@ def test_export_when_remote_export_value_greater_than_local_export_value():
         optimiser.values("local_demand_transfer"), np.zeros(N_INTERVALS)
     )
 
-
+@pytest.mark.solver('miqp')
 def test_cannot_remote_import_before_satisfying_local_generation():
     """Test that we cannot create an electrically infeasible solution where the battery
     is charging remotely from the grid while there is excess generation.

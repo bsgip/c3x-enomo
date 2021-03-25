@@ -10,6 +10,7 @@ install_requires = [
     # 'pyomo[extras]>=3.3',
     'pyomo>=3.3',
     'numpy>=1.16.3',
+    "pydantic",
     'pandas'
 ]
 if sys.version_info < (3,7):
@@ -29,7 +30,7 @@ setuptools.setup(
     install_requires=install_requires,
     python_requires='>=3.6',
     extras_require={
-        "validation":  ["pydantic", "mypy"],
+        "validation":  ["mypy"],
     },
     setup_requires=['pytest-runner'],
     tests_require=[

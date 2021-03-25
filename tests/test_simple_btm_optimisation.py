@@ -34,7 +34,7 @@ def create_energy_system(battery, load, generation, import_tariff, export_tariff
     energy_system.add_tariff(tariff)
     return energy_system
 
-
+@pytest.mark.solver('miqp')
 def test_no_action_for_equal_export_import_price():
     energy_system = create_energy_system(
         create_battery(),
@@ -52,7 +52,7 @@ def test_no_action_for_equal_export_import_price():
         optimiser.values("storage_state_of_charge"), np.zeros(N_INTERVALS)
     )
 
-
+@pytest.mark.solver('miqp')
 @pytest.mark.parametrize(
     "charging_efficiency,discharging_efficiency,should_charge",
     [(1.0, 1.0, True), (0.9, 0.9, True), (0.8, 0.8, True), (0.7, 0.7, False)],
@@ -106,7 +106,7 @@ def test_charging_in_interval_with_excess_generation(
         optimiser.values("btm_net_import")[2:], np.zeros(N_INTERVALS - 2)
     )
 
-
+@pytest.mark.solver('miqp')
 def test_charge_discharge_across_multiple_intervals():
     """
     Test that we spread charge and discharge periods across intervals with the same 
@@ -154,7 +154,7 @@ def test_charge_discharge_across_multiple_intervals():
         3,
     )
 
-
+@pytest.mark.solver('miqp')
 def test_charge_discharge_greedy():
     """
     Test that we spread charge and discharge greedily when they are included in the

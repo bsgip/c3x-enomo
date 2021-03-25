@@ -1,7 +1,10 @@
-from pyomo.opt import SolverFactory
+from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 import pyomo.environ as en
 import os
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 ####################################################################
 
@@ -58,16 +61,38 @@ minutes_per_hour = 60.0
 
 class EnergyOptimiser(object):
     
-    def __init__(self, interval_duration, number_of_intervals, energy_system, objective):
+    def __init__(self, interval_duration, number_of_intervals, energy_system, objective, optimiser_engine=None,
+                 optimiser_engine_executable=None, use_bool_variables=True):
+        """
+        Sets up the energy optimiser using the supplied solver. The configuration for the optimiser can be read from
+        environmental variables (OPTIMISER_ENGINE and OPTIMISER_ENGINE_EXECUTABLE) if not supplied as arguments
+
+        Args:
+            objective(list): List of Optimiser Objectives
+            optimiser_engine(str): name of engine to be used
+            optimiser_engine_executable(str): path to engine if required (e.G. cplex)
+            use_bool_variables(bool): converts bools to int if false
+        """
+
+        # Configure the optimiser through setting appropriate environmental variables.
+        if optimiser_engine is None:
+            self.optimiser_engine = os.environ.get('OPTIMISER_ENGINE')  # ipopt doesn't work with int/bool variables
+        else:
+            self.optimiser_engine = optimiser_engine
+
+        if optimiser_engine_executable is None:
+            if self.optimiser_engine == "cplex":
+                self.optimiser_engine_executable = os.environ.get('OPTIMISER_ENGINE_EXECUTABLE')
+            else:
+                self.optimiser_engine_executable = None
+        else:
+            self.optimiser_engine_executable = optimiser_engine_executable
+
+        self.use_bool_vars = use_bool_variables
+
         self.interval_duration = interval_duration  # The duration (in minutes) of each of the intervals being optimised over
         self.number_of_intervals = number_of_intervals
         self.energy_system = energy_system
-
-        # Configure the optimiser through setting appropriate environmental variables.
-        self.optimiser_engine = os.environ.get('OPTIMISER_ENGINE', '_cplex_shell')  # ipopt doesn't work with int/bool variables
-        self.optimiser_engine_executable = os.environ.get('OPTIMISER_ENGINE_EXECUTABLE')
-
-        self.use_bool_vars = True
 
         # These values have been arbitrarily chosen
         # A better understanding of the sensitivity of these values may be advantageous
@@ -297,19 +322,39 @@ class EnergyOptimiser(object):
                         1 - self.model.turning_point_two_ramp[i])'''
 
     def optimise(self):
+        """
+        Calls the associated solver and computes the optimal solution
+        based on the given objective.
+        """
+
         def objective_function(model):
             return self.objective
 
         self.model.total_cost = en.Objective(rule=objective_function, sense=en.minimize)
 
         # set the path to the solver
-        if self.optimiser_engine == 'cplex':
-            opt = SolverFactory(self.optimiser_engine, executable=self.optimiser_engine_executable)
+        if self.optimiser_engine is not None:
+            if self.optimiser_engine_executable is not None:
+                opt = SolverFactory(self.optimiser_engine, executable=self.optimiser_engine_executable)
+            else:
+                opt = SolverFactory(self.optimiser_engine)
         else:
-            opt = SolverFactory(self.optimiser_engine)
+            raise AttributeError("Solver not specified, use either Environment Variables or Parameter to specify")
 
-        # Solve the optimisation
-        opt.solve(self.model)
+        result = opt.solve(self.model, tee=False)
+
+        if result.solver.status != SolverStatus.ok:
+            if (result.solver.status == SolverStatus.aborted) and (len(result.solution) > 0):
+                logging.warning(
+                    "WARNING - Loading a SolverResults object with an 'aborted' status, but containing a solution")
+            else:
+                raise ValueError("Cannot load a SolverResults object with bad status:", result.solver.status)
+        elif result.solver.status == SolverStatus.ok or result.solver.status == SolverStatus.warning:  # solver seams ok, lets check the termination conditions.
+            if (result.solver.termination_condition != TerminationCondition.globallyOptimal) \
+                    and (result.solver.termination_condition != TerminationCondition.locallyOptimal) \
+                    and (result.solver.termination_condition != TerminationCondition.optimal) \
+                    and (result.solver.termination_condition != TerminationCondition.other):
+                raise ValueError(result.solver.termination_message)
 
     def values(self, variable_name, decimal_places=3):
         output = np.zeros(self.number_of_intervals)
@@ -356,8 +401,10 @@ class EnergyOptimiser(object):
 
 class BTMEnergyOptimiser(EnergyOptimiser):
 
-    def __init__(self, interval_duration, number_of_intervals, energy_system, objective):
-        super().__init__(interval_duration, number_of_intervals, energy_system, objective)
+    def __init__(self, interval_duration, number_of_intervals, energy_system, objective, optimiser_engine=None,
+                 optimiser_engine_executable=None, use_bool_variables=True):
+        super().__init__(interval_duration, number_of_intervals, energy_system, objective, optimiser_engine,
+                 optimiser_engine_executable, use_bool_variables=True)
         
         self.use_piecewise_segments = True  # Defined for a future implementation of linear piecewise segments
 
@@ -511,8 +558,10 @@ class BTMEnergyOptimiser(EnergyOptimiser):
 
 class LocalEnergyOptimiser(EnergyOptimiser):
 
-    def __init__(self, interval_duration, number_of_intervals, energy_system, objective):
-        super().__init__(interval_duration, number_of_intervals, energy_system, objective)
+    def __init__(self, interval_duration, number_of_intervals, energy_system, objective, optimiser_engine=None,
+                 optimiser_engine_executable=None, use_bool_variables=True):
+        super().__init__(interval_duration, number_of_intervals, energy_system, objective, optimiser_engine,
+                 optimiser_engine_executable, use_bool_variables)
 
         self.enforce_local_feasability = True
         self.enforce_battery_feasability = True

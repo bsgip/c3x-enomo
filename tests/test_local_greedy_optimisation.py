@@ -57,7 +57,7 @@ def create_energy_system(
     energy_system.add_local_tariff(tariff)
     return energy_system
 
-
+@pytest.mark.solver('miqp')
 def test_local_greedy_solar_optimisation():
     """Storage should preferentially charge from solar earlier
     when tariffs are equal across time periods
@@ -95,7 +95,7 @@ def test_local_greedy_solar_optimisation():
     for i in range(24, N_INTERVALS):
         assert storage_discharge_demand[i] == pytest.approx(-1.0 / 6.0, 3)
 
-
+@pytest.mark.solver('miqp')
 def test_local_greedy_demand_optimisation():
     """Storage should preferentially discharge to meet demand earlier
     when tariffs are equal across time periods

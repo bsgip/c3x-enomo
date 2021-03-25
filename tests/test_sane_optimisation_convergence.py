@@ -70,7 +70,7 @@ def create_energy_system(
     energy_system.add_local_tariff(tariff)
     return energy_system
 
-
+@pytest.mark.solver('miqp')
 @settings(deadline=1000, max_examples=100)
 @given(
     arrays(np.float, N_INTERVALS, elements=floats(0, MAX_ENERGY)),
