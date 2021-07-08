@@ -559,12 +559,13 @@ class BTMEnergyOptimiser(EnergyOptimiser):
 class LocalEnergyOptimiser(EnergyOptimiser):
 
     def __init__(self, interval_duration, number_of_intervals, energy_system, objective, optimiser_engine=None,
-                 optimiser_engine_executable=None, use_bool_variables=True):
+                 optimiser_engine_executable=None, use_bool_variables=True, 
+                 enforce_local_feasability=False, enforce_battery_feasability=False):
         super().__init__(interval_duration, number_of_intervals, energy_system, objective, optimiser_engine,
                  optimiser_engine_executable, use_bool_variables)
 
-        self.enforce_local_feasability = True
-        self.enforce_battery_feasability = True
+        self.enforce_local_feasability = enforce_local_feasability
+        self.enforce_battery_feasability = enforce_battery_feasability
 
         self.update_build_model()
         self.update_apply_constraints()
