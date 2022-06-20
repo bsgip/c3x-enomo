@@ -144,7 +144,8 @@ def test_cannot_remote_export_before_satisfying_local_demand():
         dict(enumerate(ZERO_TARIFF)),
     )
     optimiser = LocalEnergyOptimiser(
-        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModels
+        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModels,
+        enforce_local_feasability=True, enforce_battery_feasability=True
     )
 
     np.testing.assert_array_equal(
@@ -227,7 +228,8 @@ def test_cannot_remote_import_before_satisfying_local_generation():
         dict(enumerate(ZERO_TARIFF)),
     )
     optimiser = LocalEnergyOptimiser(
-        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModelsThirdParty
+        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModelsThirdParty, 
+        enforce_local_feasability=True, enforce_battery_feasability=True, 
     )
 
     np.testing.assert_array_equal(

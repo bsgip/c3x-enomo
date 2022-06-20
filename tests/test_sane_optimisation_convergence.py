@@ -104,7 +104,8 @@ def test_reasonable_local_optimisation_convergence(demand, generation):
         dict(enumerate(ZERO_TARIFF)),
     )
     optimiser = LocalEnergyOptimiser(
-        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModels
+        30, N_INTERVALS, energy_system, OptimiserObjectiveSet.LocalModels,
+        enforce_battery_feasability=True, enforce_local_feasability=True
     )
     local_net_import = optimiser.values("local_net_import")
     local_net_export = optimiser.values("local_net_export")
